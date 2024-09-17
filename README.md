@@ -10,7 +10,9 @@ Now you have Postman, you will need to download the two files located in this re
 You will need to import these two files into Postman, instructions on how to import data files can be found [here](https://learning.postman.com/docs/getting-started/importing-and-exporting/importing-data/)
 
 After importing you should see a new collection and a new environment added.
+
 **Make sure your environment is set to CrudCrud in the top right**
+
 ## Re-set environment variable for CrudCrudID
 Since the unique ID given by CrudCrud expires after 24 hours, you will need to grab a new one and set it in the environment variables.
 Go to the [CrudCrud site](https://crudcrud.com/) and it should provide you with a unique ID
