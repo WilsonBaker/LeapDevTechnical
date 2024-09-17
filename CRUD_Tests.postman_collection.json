@@ -1,0 +1,629 @@
+{
+	"info": {
+		"_postman_id": "919f2657-a98f-4c22-b82d-d5ee8460e3ce",
+		"name": "CRUD_Tests",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "15605756",
+		"_collection_link": "https://project750.postman.co/workspace/LeapDevCrud~d896ffba-0099-4793-91e3-f3a80814ea67/collection/15605756-919f2657-a98f-4c22-b82d-d5ee8460e3ce?action=share&source=collection_link&creator=15605756"
+	},
+	"item": [
+		{
+			"name": "CreateEmployee",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"//Check response status is 201 Created\r",
+							"pm.test(\"Status code is 201\", function () {\r",
+							"    pm.response.to.have.status(201);\r",
+							"});\r",
+							"\r",
+							"//Set environment variable for unique employee id to use in later test\r",
+							"var jsonData = pm.response.json();\r",
+							"pm.environment.set('RandomEmployee_ID', jsonData[\"_id\"]);\r",
+							"\r",
+							"//Save generated employee data for later\r",
+							"pm.globals.set(\"RandomEmployee_data\", JSON.stringify(jsonData));"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"FirstName\":\"{{$randomFirstName}}\",\r\n    \"LastName\":\"{{$randomLastName}}\",\r\n    \"DateOfBirth\":\"1999-01-25\",\r\n    \"StartDate\":\"2024-01-01\",\r\n    \"Department\":\"{{$randomJobArea}}\",\r\n    \"JobTitle\":\"{{$randomJobTitle}}\",\r\n    \"Email\":\"{{$randomEmail}}\",\r\n    \"Mobile\":\"{{$randomPhoneNumber}}\",\r\n    \"Address\":\"{{$randomStreetAddress}}\",\r\n    \"BaseSalary\":\"{{$randomInt}}\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://crudcrud.com/api/{{CrudCrudID}}/Employees",
+					"protocol": "https",
+					"host": [
+						"crudcrud",
+						"com"
+					],
+					"path": [
+						"api",
+						"{{CrudCrudID}}",
+						"Employees"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "ValidateSchema",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"//Check response status is 200 OK\r",
+							"pm.test(\"Status code is 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"//Define JSON schema\r",
+							"var schema = {\r",
+							"    \"required\": [\r",
+							"        \"FirstName\",\r",
+							"        \"LastName\",\r",
+							"        \"DateOfBirth\",\r",
+							"        \"StartDate\",\r",
+							"        \"Department\",\r",
+							"        \"JobTitle\",\r",
+							"        \"Email\",\r",
+							"        \"Mobile\",\r",
+							"        \"Address\",\r",
+							"        \"BaseSalary\",\r",
+							"        \"_id\"\r",
+							"    ],\r",
+							"    \"properties\": {\r",
+							"        \"FirstName\": {\r",
+							"            \"type\": \"string\"\r",
+							"        },\r",
+							"        \"LastName\": {\r",
+							"            \"type\": \"string\"\r",
+							"        },\r",
+							"        \"DateOfBirth\": {\r",
+							"            \"type\": \"string\"\r",
+							"        },\r",
+							"        \"StartDate\": {\r",
+							"            \"type\": \"string\"\r",
+							"        },\r",
+							"        \"Department\": {\r",
+							"            \"type\": \"string\"\r",
+							"        },\r",
+							"        \"JobTitle\": {\r",
+							"            \"type\": \"string\"\r",
+							"        },\r",
+							"        \"Email\": {\r",
+							"            \"type\": \"string\"\r",
+							"        },\r",
+							"        \"Mobile\": {\r",
+							"            \"type\": \"string\"\r",
+							"        },\r",
+							"        \"Address\": {\r",
+							"            \"type\": \"string\"\r",
+							"        },\r",
+							"        \"BaseSalary\": {\r",
+							"            \"type\": \"string\"\r",
+							"        },\r",
+							"        \"_id\": {\r",
+							"            \"type\": \"string\"\r",
+							"        }\r",
+							"    }\r",
+							"};\r",
+							"\r",
+							"//Validate the response body to our schema\r",
+							"pm.test('Schema validation', () => {\r",
+							"  pm.response.to.have.jsonSchema (schema);\r",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://crudcrud.com/api/{{CrudCrudID}}/Employees",
+					"protocol": "https",
+					"host": [
+						"crudcrud",
+						"com"
+					],
+					"path": [
+						"api",
+						"{{CrudCrudID}}",
+						"Employees"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "CheckEmployeeData",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"pm.test('Check response for employee data is same as saved', function() {\r",
+							"    const lodash = require('lodash');\r",
+							"\r",
+							"    //Load employee data from previous and compare to response received\r",
+							"    const lastResponse = JSON.parse(pm.globals.get(\"RandomEmployee_data\"));\r",
+							"    const thisResponse = pm.response.json();\r",
+							"\r",
+							"    const isEqual = lodash.isEqual(lastResponse, thisResponse);\r",
+							"    pm.expect(isEqual).to.be.true;\r",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://crudcrud.com/api/{{CrudCrudID}}/Employees/{{RandomEmployee_ID}}",
+					"protocol": "https",
+					"host": [
+						"crudcrud",
+						"com"
+					],
+					"path": [
+						"api",
+						"{{CrudCrudID}}",
+						"Employees",
+						"{{RandomEmployee_ID}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "UpdateSingleEmployee",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200 OK\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"FirstName\":\"Test\",\r\n    \"LastName\":\"Man\",\r\n    \"DateOfBirth\":\"1999-01-25\",\r\n    \"StartDate\":\"2024-01-01\",\r\n    \"Department\":\"Finance\",\r\n    \"JobTitle\":\"Analyst\",\r\n    \"Email\":\"testman@test.com\",\r\n    \"Mobile\":\"123456789\",\r\n    \"Address\":\"123 George St\",\r\n    \"BaseSalary\":\"70000\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://crudcrud.com/api/{{CrudCrudID}}/Employees/{{RandomEmployee_ID}}",
+					"protocol": "https",
+					"host": [
+						"crudcrud",
+						"com"
+					],
+					"path": [
+						"api",
+						"{{CrudCrudID}}",
+						"Employees",
+						"{{RandomEmployee_ID}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "CheckUpdatedData",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200 OK\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"//Get employee id\r",
+							"const id = pm.environment.get(\"RandomEmployee_ID\");\r",
+							"\r",
+							"//Create JSON of updated employee data\r",
+							"var updatedEmployeeData = {\r",
+							"    \"_id\":id,\r",
+							"    \"FirstName\":\"Test\",\r",
+							"    \"LastName\":\"Man\",\r",
+							"    \"DateOfBirth\":\"1999-01-25\",\r",
+							"    \"StartDate\":\"2024-01-01\",\r",
+							"    \"Department\":\"Finance\",\r",
+							"    \"JobTitle\":\"Analyst\",\r",
+							"    \"Email\":\"testman@test.com\",\r",
+							"    \"Mobile\":\"123456789\",\r",
+							"    \"Address\":\"123 George St\",\r",
+							"    \"BaseSalary\":\"70000\"\r",
+							"}\r",
+							"\r",
+							"pm.test('Check response for employee data is same as updated data', function() {\r",
+							"    const lodash = require('lodash');\r",
+							"\r",
+							"    const firstResponse = JSON.parse(pm.globals.get(\"RandomEmployee_data\"));\r",
+							"    const thisResponse = pm.response.json();\r",
+							"\r",
+							"    //Check NOT equal to old data\r",
+							"    var isEqual = lodash.isEqual(firstResponse, thisResponse);\r",
+							"    pm.expect(isEqual).to.be.false;\r",
+							"\r",
+							"    //Check IS equal to updated data\r",
+							"    isEqual = lodash.isEqual(updatedEmployeeData, thisResponse);\r",
+							"    pm.expect(isEqual).to.be.true;\r",
+							"});\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://crudcrud.com/api/{{CrudCrudID}}/Employees/{{RandomEmployee_ID}}",
+					"protocol": "https",
+					"host": [
+						"crudcrud",
+						"com"
+					],
+					"path": [
+						"api",
+						"{{CrudCrudID}}",
+						"Employees",
+						"{{RandomEmployee_ID}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "DeleteEmployee",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200 OK\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "https://crudcrud.com/api/{{CrudCrudID}}/Employees/{{RandomEmployee_ID}}",
+					"protocol": "https",
+					"host": [
+						"crudcrud",
+						"com"
+					],
+					"path": [
+						"api",
+						"{{CrudCrudID}}",
+						"Employees",
+						"{{RandomEmployee_ID}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "CheckEmployeeDeleted",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 404 Not Found\", function () {\r",
+							"    pm.response.to.have.status(404);\r",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://crudcrud.com/api/{{CrudCrudID}}/Employees/{{RandomEmployee_ID}}",
+					"protocol": "https",
+					"host": [
+						"crudcrud",
+						"com"
+					],
+					"path": [
+						"api",
+						"{{CrudCrudID}}",
+						"Employees",
+						"{{RandomEmployee_ID}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "CreateMultiEmployee1",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"//Check response status is 201 Created\r",
+							"pm.test(\"Status code is 201\", function () {\r",
+							"    pm.response.to.have.status(201);\r",
+							"});\r",
+							"\r",
+							"//Set environment variable for unique employee id to use in later test\r",
+							"var jsonData = pm.response.json();\r",
+							"pm.environment.set('MultiEmployee1_ID', jsonData[\"_id\"]);\r",
+							"\r",
+							"//Save generated employee data for later\r",
+							"pm.globals.set(\"MultiEmployee_data_1\", JSON.stringify(jsonData));"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"FirstName\":\"{{$randomFirstName}}\",\r\n    \"LastName\":\"{{$randomLastName}}\",\r\n    \"DateOfBirth\":\"1999-01-25\",\r\n    \"StartDate\":\"2024-01-01\",\r\n    \"Department\":\"{{$randomJobArea}}\",\r\n    \"JobTitle\":\"{{$randomJobTitle}}\",\r\n    \"Email\":\"{{$randomEmail}}\",\r\n    \"Mobile\":\"{{$randomPhoneNumber}}\",\r\n    \"Address\":\"{{$randomStreetAddress}}\",\r\n    \"BaseSalary\":\"{{$randomInt}}\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://crudcrud.com/api/{{CrudCrudID}}/Employees",
+					"protocol": "https",
+					"host": [
+						"crudcrud",
+						"com"
+					],
+					"path": [
+						"api",
+						"{{CrudCrudID}}",
+						"Employees"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "CreateMultiEmployee2",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"//Check response status is 201 Created\r",
+							"pm.test(\"Status code is 201\", function () {\r",
+							"    pm.response.to.have.status(201);\r",
+							"});\r",
+							"\r",
+							"//Set environment variable for unique employee id to use in later test\r",
+							"var jsonData = pm.response.json();\r",
+							"pm.environment.set('MultiEmployee2_ID', jsonData[\"_id\"]);\r",
+							"\r",
+							"//Save generated employee data for later\r",
+							"pm.globals.set(\"MultiEmployee_data_2\", JSON.stringify(jsonData));"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"FirstName\":\"{{$randomFirstName}}\",\r\n    \"LastName\":\"{{$randomLastName}}\",\r\n    \"DateOfBirth\":\"1999-01-25\",\r\n    \"StartDate\":\"2024-01-01\",\r\n    \"Department\":\"{{$randomJobArea}}\",\r\n    \"JobTitle\":\"{{$randomJobTitle}}\",\r\n    \"Email\":\"{{$randomEmail}}\",\r\n    \"Mobile\":\"{{$randomPhoneNumber}}\",\r\n    \"Address\":\"{{$randomStreetAddress}}\",\r\n    \"BaseSalary\":\"{{$randomInt}}\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://crudcrud.com/api/{{CrudCrudID}}/Employees",
+					"protocol": "https",
+					"host": [
+						"crudcrud",
+						"com"
+					],
+					"path": [
+						"api",
+						"{{CrudCrudID}}",
+						"Employees"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "CheckEmployeeList",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200 OK\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"\r",
+							"pm.test('Check response for list of employee data from last 2 create requests', function() {\r",
+							"    const lodash = require('lodash');\r",
+							"\r",
+							"    const firstResponse = JSON.parse(pm.globals.get(\"MultiEmployee_data_1\"));\r",
+							"    const secondResponse = JSON.parse(pm.globals.get(\"MultiEmployee_data_2\"));\r",
+							"    const thisResponse = pm.response.json();\r",
+							"\r",
+							"    console.log(thisResponse)\r",
+							"    console.log(firstResponse)\r",
+							"\r",
+							"    var isEqual = lodash.isEqual(firstResponse, thisResponse[0]);\r",
+							"    pm.expect(isEqual).to.be.true;\r",
+							"\r",
+							"    isEqual = lodash.isEqual(secondResponse, thisResponse[1]);\r",
+							"    pm.expect(isEqual).to.be.true;\r",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://crudcrud.com/api/{{CrudCrudID}}/Employees",
+					"protocol": "https",
+					"host": [
+						"crudcrud",
+						"com"
+					],
+					"path": [
+						"api",
+						"{{CrudCrudID}}",
+						"Employees"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Cleanup1",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200 OK\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "https://crudcrud.com/api/{{CrudCrudID}}/Employees/{{MultiEmployee1_ID}}",
+					"protocol": "https",
+					"host": [
+						"crudcrud",
+						"com"
+					],
+					"path": [
+						"api",
+						"{{CrudCrudID}}",
+						"Employees",
+						"{{MultiEmployee1_ID}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Cleanup1 Copy",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200 OK\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "https://crudcrud.com/api/{{CrudCrudID}}/Employees/{{MultiEmployee2_ID}}",
+					"protocol": "https",
+					"host": [
+						"crudcrud",
+						"com"
+					],
+					"path": [
+						"api",
+						"{{CrudCrudID}}",
+						"Employees",
+						"{{MultiEmployee2_ID}}"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
